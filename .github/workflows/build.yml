@@ -5,12 +5,22 @@ on:
     branches:
       - master
 
-
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
-    
+
+    services:
+      sonarqube:
+        image: sonarqube:latest
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd="curl -s http://localhost:9000/api/system/health | grep -oP '\"status\":\"\K[^\" ]+' | grep -q UP"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,8 +41,19 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Wait for SonarQube to be healthy
+        run: |
+          echo "Waiting for SonarQube to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:9000/api/system/health | grep -q 'UP'; then
+              echo "SonarQube is up and running!"
+              break
+            fi
+            echo "Waiting for SonarQube to be healthy..."
+            sleep 10
+          done
       - name: Build and analyze
         env:
-          SONAR_TOKEN: sqp_6ee2b3d5024bc65eaad94246c41ab0e05f1bc61f
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://localhost:9000
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Teste -Dsonar.projectName='Teste'
