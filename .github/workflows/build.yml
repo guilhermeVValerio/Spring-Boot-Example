@@ -12,7 +12,7 @@ jobs:
 
     services:
       sonarqube:
-        image: sonarqube:lts
+        image: sonarqube:8.9.7-community
         ports:
           - 9000:9000
         options: >-
@@ -20,6 +20,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+          --memory=4g  # Tenta alocar mais memória
 
     steps:
       - uses: actions/checkout@v4
@@ -52,8 +53,24 @@ jobs:
             echo "Waiting for SonarQube to be healthy..."
             sleep 10
           done
-      - name: Check Docker logs
-        run: docker logs $(docker ps -q --filter "ancestor=sonarqube")
+      - name: List all containers
+        run: docker ps -a
+      - name: Get logs of all containers
+        run: |
+          for container in $(docker ps -a -q); do
+            echo "Logs for container $container"
+            docker logs $container
+          done
+      - name: Check system resources
+        run: |
+          echo "Memory usage:"
+          free -h
+          echo "CPU usage:"
+          top -bn1 | grep "Cpu(s)"
+      - name: Check Docker version
+        run: docker version
+      - name: Check Docker info
+        run: docker info
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
