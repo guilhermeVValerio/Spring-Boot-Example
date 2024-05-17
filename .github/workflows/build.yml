@@ -34,5 +34,5 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: sqp_772c3c7509340aed348f568757840796a9adc893
-          SONAR_HOST_URL: http://localhost:9000
+          SONAR_HOST_URL: http://127.0.0.1:9000
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Teste -Dsonar.projectName='Teste'
