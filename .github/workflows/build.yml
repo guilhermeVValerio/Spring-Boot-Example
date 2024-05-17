@@ -12,7 +12,7 @@ jobs:
 
     services:
       sonarqube:
-        image: sonarqube:latest
+        image: sonarqube:lts
         ports:
           - 9000:9000
         options: >-
@@ -52,6 +52,8 @@ jobs:
             echo "Waiting for SonarQube to be healthy..."
             sleep 10
           done
+      - name: Check Docker logs
+        run: docker logs $(docker ps -q --filter "ancestor=sonarqube")
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
