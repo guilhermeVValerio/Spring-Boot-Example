@@ -38,29 +38,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build with Maven
-        run: mvn -B compile
+      - name: Build and analyze with Maven
+        run: mvn -B compile org.sonarsource.scanner.maven:sonar -Dsonar.projectKey=guilhermeVValerio_Spring-Boot-Example -Dsonar.organization=guilhermevvalerio -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-      - name: Debug information
-        run: |
-          echo "Printing environment variables"
-          env
-          echo "Printing Java version"
-          java -version
-          echo "Printing Maven version"
-          mvn -v
-          echo "Printing current directory"
-          pwd
-          echo "Listing current directory contents"
-          ls -la
-
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@v1.9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Make sure the token is stored as a secret in your repo
+      - name: Upload Maven build artifacts
+        uses: actions/upload-artifact@v2
         with:
-          args: >
-            -Dsonar.projectKey=guilhermeVValerio_Spring-Boot-Example
-            -Dsonar.organization=guilhermevvalerio
-            -Dsonar.host.url=https://sonarcloud.io
+          name: maven-build-artifacts
+          path: target/
