@@ -41,6 +41,19 @@ jobs:
       - name: Build with Maven
         run: mvn -B compile
 
+      - name: Debug information
+        run: |
+          echo "Printing environment variables"
+          env
+          echo "Printing Java version"
+          java -version
+          echo "Printing Maven version"
+          mvn -v
+          echo "Printing current directory"
+          pwd
+          echo "Listing current directory contents"
+          ls -la
+
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@v1.9
         env:
